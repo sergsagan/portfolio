@@ -19,6 +19,7 @@ var gulp = require('gulp'),
     svgmin = require('gulp-svgmin'),
     svgSprites = require('gulp-svg-sprites'),
     size = require('gulp-size'),
+    cssfont64 = require('gulp-cssfont64'),
     opn = require('opn');
 
 // Declaring paths and variables
@@ -28,7 +29,7 @@ var src = {
         images: ['./src/img/**/*.*', './src/img/icons/*.svg', '!./src/img/icons/sprites/*.svg'],
         sprites: ['./src/img/icons/sprites/*.svg'],
         svg: ['./src/img/icons/*.svg'],
-        fonts: ['./src/fonts/**/*.*'],
+        fonts: ['./src/fonts/**/*.{woff,woff2}'],
         index: ['./src/index.html']
     },
 
@@ -237,13 +238,14 @@ gulp.task('sprite', function() {
 
 
 // ~ Fonts ~
-// Copy fonts to output dir
-gulp.task('fonts', function() {
+// Convert fonts
+
+gulp.task('fontsConvert', function () {
     return gulp.src(src.fonts)
-        .pipe(gulp.dest(outputDir + 'fonts'))
+        .pipe(cssfont64())
+        .pipe(gulp.dest(outputDir + 'css'))
         .pipe(connect.reload())
 });
-
 
 
 // Copy index to output dir (minify for production)
@@ -262,14 +264,14 @@ gulp.task('watch', function() {
     gulp.watch(src.index, ['index']);
     gulp.watch(src.images, ['images']);
     gulp.watch(src.svg, ['svg']);
-    gulp.watch(src.fonts, ['fonts']);
+    gulp.watch(src.fonts, ['fontsConvert']);
 });
 
 
 
 // ~Build tasks~
 //Build dev version
-gulp.task('build', ['styles:vendor', 'styles', 'js:vendor', 'js', 'images', 'sprite', 'fonts', 'index']);
+gulp.task('build', ['styles:vendor', 'styles', 'js:vendor', 'js', 'images', 'sprite', 'fontsConvert', 'index']);
 
 // Build and run dev environment
 gulp.task('default', ['build', 'webServer', 'openBrowser', 'watch']);
